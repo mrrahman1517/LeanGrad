@@ -3,10 +3,13 @@
 ## 🎉 Successfully Created and Deployed!
 
 **Repository**: https://github.com/mrrahman1517/LeanGrad  
-**Commit Hash**: 319e260  
+**Location**: `/Users/muntasirraihanrahman/Documents/LeanProgramming/LeanGrad`
+**Commit Hash**: 9f756e3  
 **Date**: November 2, 2025
 
-## 📦 What Was Deployed
+## ✨ Clean Repository Structure
+
+**ONLY RELEVANT FILES** - No more nested folders or unrelated content!
 
 ### Core Lean Files
 - `Micrograd.lean` - Main autograd entry point
@@ -23,11 +26,19 @@
 - `quick_plot.py` - Quick function switcher
 
 ### Documentation & Build
-- `README.md` - **Updated for LeanGrad branding** 📖
+- `README.md` - **LeanGrad project documentation** 📖
 - `README_Plotter.md` - Comprehensive plotting docs
 - `lakefile.toml` - Lake build configuration
 - `Makefile` - Convenience commands
-- `.gitignore` - **Enhanced for Lean + Python**
+- `.gitignore` - **Proper exclusions for generated files**
+
+## 🧹 What Was Cleaned Up
+
+✅ **Extracted from nested structure** - No more `/micrograd` subfolder  
+✅ **Removed generated files** - CSV files excluded from repository  
+✅ **Clean git history** - Fresh repository with relevant commits only  
+✅ **Proper .gitignore** - Excludes temporary and build files  
+✅ **Standalone project** - Independent of SpringPhysics parent project
 
 ## ✨ Key Features Deployed
 
