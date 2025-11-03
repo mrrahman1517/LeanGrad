@@ -1,3 +1,7 @@
+import Micrograd.Basic
+import Mathlib.Analysis.Calculus.Deriv.Basic
+import Mathlib.Data.Real.Basic
+
 /-!
 # LeanGrad - Hybrid Computational + Verification Autograd Engine
 
@@ -20,10 +24,6 @@ that combines fast computational differentiation with formal verification capabi
 This provides the foundation for building neural networks and autograd systems
 with both computational efficiency and mathematical rigor.
 -/
-
-import Micrograd.Basic
-import Mathlib.Analysis.Calculus.Deriv.Basic
-import Mathlib.Data.Real.Basic
 
 -- ========================================
 -- COMPUTATIONAL DIFFERENTIATION TESTING
@@ -257,7 +257,7 @@ open Real
 /-- Same function defined for formal verification using Real numbers -/
 def f_real : ℝ → ℝ := fun x => 3 * x^2 - 4 * x + 5
 
-/-- Mathlib's automatic derivative (for formal reasoning) -/
+-- Check that Mathlib's automatic derivative works (for formal reasoning)
 #check deriv f_real
 
 /--
@@ -457,7 +457,7 @@ combining fast numerical computation with rigorous formal verification.
 
 ### Applications:
 - Neural networks with formally verified backpropagation
-- Scientific computing with certified numerical methods  
+- Scientific computing with certified numerical methods
 - Optimization algorithms with proven convergence properties
 - Educational tools with interactive mathematical verification
 
@@ -478,7 +478,7 @@ def complex_derivative : ExprExtended := derivative_extended complex_function
 #eval eval_extended complex_derivative 1.0  -- Numerical result: ≈ 2.22
 
 -- Display the symbolic form for verification
-#eval expr_extended_to_string complex_function   -- Show: x² * sin(x)  
+#eval expr_extended_to_string complex_function   -- Show: x² * sin(x)
 #eval expr_extended_to_string complex_derivative -- Show: derivative expression
 
 /-!
