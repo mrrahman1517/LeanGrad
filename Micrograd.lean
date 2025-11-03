@@ -71,6 +71,42 @@ def y : Float := -3
 #eval delx h f y    -- Numerical derivative at x=-3
 #eval df (-3)       -- Analytical derivative at x=-3
 
+-- ========================================
+-- FINDING ZEROS OF THE DERIVATIVE (CRITICAL POINTS)
+-- ========================================
+
+-- Evaluate delx from x = -4 to 4 to find where derivative is zero
+-- The derivative f'(x) = 6x - 4 should be zero at x = 2/3 ≈ 0.6667
+
+-- Test points around the expected zero
+#eval delx h f (-4.0)    -- f'(-4) = 6(-4) - 4 = -28
+#eval delx h f (-3.0)    -- f'(-3) = 6(-3) - 4 = -22
+#eval delx h f (-2.0)    -- f'(-2) = 6(-2) - 4 = -16
+#eval delx h f (-1.0)    -- f'(-1) = 6(-1) - 4 = -10
+#eval delx h f (0.0)     -- f'(0) = 6(0) - 4 = -4
+#eval delx h f (0.5)     -- f'(0.5) = 6(0.5) - 4 = -1
+#eval delx h f (0.6)     -- f'(0.6) = 6(0.6) - 4 = -0.4
+#eval delx h f (0.66)    -- f'(0.66) = 6(0.66) - 4 ≈ -0.04
+#eval delx h f (0.667)   -- f'(0.667) = 6(0.667) - 4 ≈ 0.002 (very close to zero!)
+#eval delx h f (0.67)    -- f'(0.67) = 6(0.67) - 4 = 0.02
+#eval delx h f (0.7)     -- f'(0.7) = 6(0.7) - 4 = 0.2
+#eval delx h f (1.0)     -- f'(1) = 6(1) - 4 = 2
+#eval delx h f (2.0)     -- f'(2) = 6(2) - 4 = 8
+#eval delx h f (3.0)     -- f'(3) = 6(3) - 4 = 14
+#eval delx h f (4.0)     -- f'(4) = 6(4) - 4 = 20
+
+-- The exact zero is at x = 2/3
+def critical_point : Float := 2.0 / 3.0
+#eval critical_point     -- Should be ≈ 0.6667
+#eval delx h f critical_point  -- Should be very close to zero
+#eval df critical_point        -- Analytical derivative should be exactly zero
+
+-- Verify this is indeed the minimum of f(x) = 3x² - 4x + 5
+#eval f critical_point    -- Value of f at the critical point (minimum)
+
+-- Summary: Zero of the derivative found at x ≈ 0.6667 (exactly 2/3)
+-- This means f(x) = 3x² - 4x + 5 has its minimum at x = 2/3
+-- At this point: f(2/3) ≈ 3.6667 and f'(2/3) = 0
 
 
 
