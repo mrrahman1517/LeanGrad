@@ -29,8 +29,27 @@ with both computational efficiency and mathematical rigor.
 -- COMPUTATIONAL DIFFERENTIATION TESTING
 -- ========================================
 
-/-- Example function for testing: f(x) = 3x² - 4x + 5 -/
+/-!
+## Precision Options in Lean 4
+
+For higher precision than Float (64-bit IEEE 754), we have several alternatives:
+
+1. **Real (ℝ)**: Exact real numbers (infinite precision, but computable only for specific operations)
+2. **Rat**: Exact rational numbers (arbitrary precision fractions)
+3. **Fixed-point decimals**: Can simulate higher precision with scaled integers
+4. **Symbolic computation**: Exact symbolic representation
+
+Currently using Float for computational efficiency, but we can upgrade for higher precision.
+-/
+
+/-- Example function for testing: f(x) = 3x² - 4x + 5 (Float version) -/
 def f (x : Float) : Float := 3 * x^2 - 4 * x + 5
+
+/-- Higher precision version using Rat (exact rational arithmetic) -/
+def f_rat (x : Rat) : Rat := 3 * x^2 - 4 * x + 5
+
+/-- Real number version for formal verification -/
+def f_real_comp : ℝ → ℝ := fun x => 3 * x^2 - 4 * x + 5
 
 /--
 Numerical derivative using finite differences: (f(x+h) - f(x))/h
@@ -39,26 +58,63 @@ This approximates the true derivative and serves as a reference for comparison.
 def delx (h : Float) (f : Float → Float) (x : Float) : Float :=
   (f (x + h) - f x) / h
 
-/-- Analytical derivative of f: f'(x) = 6x - 4 -/
+/-- Higher precision numerical derivative using Rat -/
+def delx_rat (h : Rat) (f : Rat → Rat) (x : Rat) : Rat :=
+  (f (x + h) - f x) / h
+
+/-- Analytical derivative of f: f'(x) = 6x - 4 (Float version) -/
 def df (x : Float) : Float := 6 * x - 4
+
+/-- Analytical derivative using Rat for exact computation -/
+def df_rat (x : Rat) : Rat := 6 * x - 4
 
 
 -- ========================================
 -- TESTING AND VERIFICATION
 -- ========================================
 
--- Test function values
+/-!
+## Precision Comparison: Float vs Rat
+
+Let's compare the precision of Float (64-bit) vs Rat (arbitrary precision)
+at the critical point x = 2/3 where the derivative should be exactly zero.
+-/
+
+-- Test function values with Float
 #eval f 0    -- f(0) = 5
 #eval f 1    -- f(1) = 4
 #eval f 3    -- f(3) = 20
+
+-- Test function values with Rat (exact arithmetic)
+#eval f_rat 0       -- f(0) = 5 (exact)
+#eval f_rat 1       -- f(1) = 4 (exact)
+#eval f_rat (2/3)   -- f(2/3) = exact minimum value
 
 /-- Small step size for numerical differentiation -/
 def h : Float := 0.00000001
 #eval h
 
+/-- Much smaller step size for Rat (can go arbitrarily small) -/
+def h_rat : Rat := 1 / 100000000000  -- 10^-11 precision
+#eval h_rat
+
 /-- Test point for derivative calculations -/
 def x : Float := 3.0
 #eval x
+
+-- Compare Float precision vs Rat precision at critical point
+def critical_point_float : Float := 2.0 / 3.0
+def critical_point_rat : Rat := 2 / 3  -- Exact rational
+
+#eval critical_point_float  -- Float approximation: 0.6666667
+#eval critical_point_rat    -- Exact rational: 2/3
+
+-- Compare derivatives at critical point (should be exactly zero)
+#eval df critical_point_float      -- Float: should be close to 0
+#eval df_rat critical_point_rat    -- Rat: should be exactly 0
+
+#eval delx h f critical_point_float           -- Float numerical derivative
+#eval delx_rat h_rat f_rat critical_point_rat -- Rat numerical derivative (much more precise)
 
 -- Compare numerical vs analytical derivatives
 #eval delx h f x    -- Numerical derivative at x=3
@@ -69,7 +125,30 @@ def y : Float := -3
 
 -- Verify derivatives work for negative inputs
 #eval delx h f y    -- Numerical derivative at x=-3
-#eval df (-3)       -- Analytical derivative at x=-3
+#eval df y       -- Analytical derivative at x=-3
+
+def zero : Float := 2/3
+#eval delx h f zero
+#eval df zero
+
+def a := 2.0
+def b := -3.0
+def c := 10.0
+def d := a * b + c
+#eval "d: "
+#eval d
+
+def h1 := 0.0001
+def d1 := a * b + c
+#eval d1
+
+def inc (x : Float) (delx : Float) : Float := x + delx
+def d2 := (inc a h) * b + c
+#eval d2
+
+#eval (d2 - d1) / h
+
+
 
 -- ========================================
 -- FINDING ZEROS OF THE DERIVATIVE (CRITICAL POINTS)
@@ -90,6 +169,10 @@ to evaluate the derivative at multiple points systematically.
 def test_points : List Float :=
   [-4.0, -3.0, -2.0, -1.0, 0.0, 0.5, 0.6, 0.66, 0.667, 0.67, 0.7, 1.0, 2.0, 3.0, 4.0]
 
+/-- Higher precision test points using Rat -/
+def test_points_rat : List Rat :=
+  [-4, -3, -2, -1, 0, 1/2, 3/5, 33/50, 2/3, 67/100, 7/10, 1, 2, 3, 4]
+
 /--
 Evaluate derivative at a single point and return formatted result.
 This function computes both numerical and analytical derivatives for comparison.
@@ -97,6 +180,12 @@ This function computes both numerical and analytical derivatives for comparison.
 def eval_derivative_at_point (x_val : Float) : String :=
   let numerical := delx h f x_val
   let analytical := df x_val
+  s!"x = {x_val} | delx = {numerical} | f'(x) = {analytical}"
+
+/-- Higher precision derivative evaluation using Rat -/
+def eval_derivative_at_point_rat (x_val : Rat) : String :=
+  let numerical := delx_rat h_rat f_rat x_val
+  let analytical := df_rat x_val
   s!"x = {x_val} | delx = {numerical} | f'(x) = {analytical}"
 
 /--
@@ -108,6 +197,16 @@ def evaluate_all_points (points : List Float) : List String :=
 
 -- Display results using our iterative approach
 #eval evaluate_all_points test_points
+
+-- High precision evaluation using Rat
+def evaluate_all_points_rat (points : List Rat) : List String :=
+  points.map eval_derivative_at_point_rat
+
+#eval evaluate_all_points_rat test_points_rat
+
+-- Compare precision at the critical point
+#eval eval_derivative_at_point critical_point_float
+#eval eval_derivative_at_point_rat critical_point_rat
 
 /-- Alternative: Generate points programmatically using range -/
 def generate_range (start : Float) (stop : Float) (num_points : Nat) : List Float :=
@@ -155,19 +254,33 @@ def find_zero_recursive (left right : Float) (tolerance : Float) (max_depth : Na
 def find_minimum_in_range (start stop : Float) (num_points : Nat) : (Float × Float) :=
   let points := generate_range start stop num_points
   let evaluations := points.map (fun x => (x, delx h f x))
-  evaluations.foldl 
-    (fun acc pair => if Float.abs pair.2 < Float.abs acc.2 then pair else acc) 
+  evaluations.foldl
+    (fun acc pair => if Float.abs pair.2 < Float.abs acc.2 then pair else acc)
     (0.0, 1000.0)  -- Initial value with large derivative
 
 -- Test the recursive zero finder
 #eval find_zero_recursive (-1.0) 2.0 0.001 20  -- Should find ≈ 0.6667
 #eval find_minimum_in_range (-4.0) 4.0 50      -- Should find minimum derivative point
 
+/-- High-precision recursive zero finder using Rat -/
+def find_zero_recursive_rat (left right : Rat) (tolerance : Rat) (max_depth : Nat) : Rat :=
+  if max_depth = 0 then (left + right) / 2
+  else
+    let mid := (left + right) / 2
+    let f_mid := delx_rat h_rat f_rat mid
+    if abs f_mid < tolerance then mid
+    else if f_mid > 0 then find_zero_recursive_rat left mid tolerance (max_depth - 1)
+    else find_zero_recursive_rat mid right tolerance (max_depth - 1)
+
+-- Test high-precision zero finder (should find very close to exact 2/3)
+-- Note: Using smaller tolerance and more iterations for higher precision
+#eval find_zero_recursive_rat (-1) 2 (1/1000000) 25  -- Much higher precision than Float
+
 /-- Demonstrate higher-order functions for derivative analysis -/
 def analyze_derivative (func : Float → Float) (range_points : List Float) : List (Float × Float × String) :=
-  range_points.map (fun x => 
+  range_points.map (fun x =>
     let derivative_val := delx h func x
-    let classification := if Float.abs derivative_val < 0.01 then "CRITICAL" 
+    let classification := if Float.abs derivative_val < 0.01 then "CRITICAL"
                          else if derivative_val > 0 then "INCREASING"
                          else "DECREASING"
     (x, derivative_val, classification))
