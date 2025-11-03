@@ -79,21 +79,47 @@ def y : Float := -3
 -- The derivative f'(x) = 6x - 4 should be zero at x = 2/3 ≈ 0.6667
 
 -- Test points around the expected zero
-#eval delx h f (-4.0)    -- f'(-4) = 6(-4) - 4 = -28
-#eval delx h f (-3.0)    -- f'(-3) = 6(-3) - 4 = -22
-#eval delx h f (-2.0)    -- f'(-2) = 6(-2) - 4 = -16
-#eval delx h f (-1.0)    -- f'(-1) = 6(-1) - 4 = -10
-#eval delx h f (0.0)     -- f'(0) = 6(0) - 4 = -4
-#eval delx h f (0.5)     -- f'(0.5) = 6(0.5) - 4 = -1
-#eval delx h f (0.6)     -- f'(0.6) = 6(0.6) - 4 = -0.4
-#eval delx h f (0.66)    -- f'(0.66) = 6(0.66) - 4 ≈ -0.04
-#eval delx h f (0.667)   -- f'(0.667) = 6(0.667) - 4 ≈ 0.002 (very close to zero!)
-#eval delx h f (0.67)    -- f'(0.67) = 6(0.67) - 4 = 0.02
-#eval delx h f (0.7)     -- f'(0.7) = 6(0.7) - 4 = 0.2
-#eval delx h f (1.0)     -- f'(1) = 6(1) - 4 = 2
-#eval delx h f (2.0)     -- f'(2) = 6(2) - 4 = 8
-#eval delx h f (3.0)     -- f'(3) = 6(3) - 4 = 14
-#eval delx h f (4.0)     -- f'(4) = 6(4) - 4 = 20
+/-!
+## Iterative Derivative Evaluation
+
+Instead of manually writing each #eval, we can use programmatic approaches
+to evaluate the derivative at multiple points systematically.
+-/
+
+/-- List of test points for derivative evaluation -/
+def test_points : List Float :=
+  [-4.0, -3.0, -2.0, -1.0, 0.0, 0.5, 0.6, 0.66, 0.667, 0.67, 0.7, 1.0, 2.0, 3.0, 4.0]
+
+/--
+Evaluate derivative at a single point and return formatted result.
+This function computes both numerical and analytical derivatives for comparison.
+-/
+def eval_derivative_at_point (x_val : Float) : String :=
+  let numerical := delx h f x_val
+  let analytical := df x_val
+  s!"x = {x_val} | delx = {numerical} | f'(x) = {analytical}"
+
+/--
+Map function over list to evaluate derivative at all test points.
+This demonstrates functional programming approach to batch evaluation.
+-/
+def evaluate_all_points (points : List Float) : List String :=
+  points.map eval_derivative_at_point
+
+-- Display results using our iterative approach
+#eval evaluate_all_points test_points
+
+/-- Alternative: Generate points programmatically using range -/
+def generate_range (start : Float) (stop : Float) (num_points : Nat) : List Float :=
+  if num_points = 0 then []
+  else if num_points = 1 then [start]
+  else
+    let step := (stop - start) / (num_points - 1).toFloat
+    List.range num_points |>.map (fun i => start + i.toFloat * step)
+
+/-- Evaluate derivative over a systematic grid -/
+def grid_points : List Float := generate_range (-4.0) 4.0 17
+#eval grid_points.map (fun x => (x, delx h f x, df x))
 
 -- The exact zero is at x = 2/3
 def critical_point : Float := 2.0 / 3.0
@@ -107,6 +133,47 @@ def critical_point : Float := 2.0 / 3.0
 -- Summary: Zero of the derivative found at x ≈ 0.6667 (exactly 2/3)
 -- This means f(x) = 3x² - 4x + 5 has its minimum at x = 2/3
 -- At this point: f(2/3) ≈ 3.6667 and f'(2/3) = 0
+
+/-!
+## Advanced: Recursive Zero-Finding Algorithm
+
+This demonstrates a more sophisticated approach using binary search
+to automatically find zeros of the derivative function.
+-/
+
+/-- Binary search for zeros of derivative function -/
+def find_zero_recursive (left right : Float) (tolerance : Float) (max_depth : Nat) : Float :=
+  if max_depth = 0 then (left + right) / 2
+  else
+    let mid := (left + right) / 2
+    let f_mid := delx h f mid
+    if Float.abs f_mid < tolerance then mid
+    else if f_mid > 0 then find_zero_recursive left mid tolerance (max_depth - 1)
+    else find_zero_recursive mid right tolerance (max_depth - 1)
+
+/-- Iterative approach using List.foldl for accumulation -/
+def find_minimum_in_range (start stop : Float) (num_points : Nat) : (Float × Float) :=
+  let points := generate_range start stop num_points
+  let evaluations := points.map (fun x => (x, delx h f x))
+  evaluations.foldl 
+    (fun acc pair => if Float.abs pair.2 < Float.abs acc.2 then pair else acc) 
+    (0.0, 1000.0)  -- Initial value with large derivative
+
+-- Test the recursive zero finder
+#eval find_zero_recursive (-1.0) 2.0 0.001 20  -- Should find ≈ 0.6667
+#eval find_minimum_in_range (-4.0) 4.0 50      -- Should find minimum derivative point
+
+/-- Demonstrate higher-order functions for derivative analysis -/
+def analyze_derivative (func : Float → Float) (range_points : List Float) : List (Float × Float × String) :=
+  range_points.map (fun x => 
+    let derivative_val := delx h func x
+    let classification := if Float.abs derivative_val < 0.01 then "CRITICAL" 
+                         else if derivative_val > 0 then "INCREASING"
+                         else "DECREASING"
+    (x, derivative_val, classification))
+
+-- Apply analysis to our test points
+#eval analyze_derivative f test_points
 
 
 
