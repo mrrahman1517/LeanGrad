@@ -1,7 +1,7 @@
 name = "micrograd"
 version = "0.1.0"
 keywords = ["math"]
-defaultTargets = ["Micrograd"]
+defaultTargets = ["Micrograd", "AwsDNSRace"]
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
@@ -15,3 +15,6 @@ scope = "leanprover-community"
 
 [[lean_lib]]
 name = "Micrograd"
+
+[[lean_lib]]
+name = "AwsDNSRace"
